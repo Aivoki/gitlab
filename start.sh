@@ -1,31 +1,38 @@
 #!/bin/bash
 
+function horizontalLine()
+{
+    echo -e "\n"
+    printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' =
+    echo -e $1
+    printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' =
+}
+
 [ -n "${DEBUG}" ] && set -x
 
 IP="$(hostname -I | awk '{print $1}')"
 
-echo -e "SEU IP E: $IP"
+horizontalLine "SEU IP E: $IP"
 
 sed "s/ALTERAR_IP/$IP/g" .env.template > .env
 
 source ./.env
 
-echo -e "Baixando as imagens necessárias"
+horizontalLine "Baixando as imagens necessárias"
 
 docker-compose pull
 
-echo -e "O endereço que será configurado no seu arquivo de hosts será: ${IP} ${GITLAB_URL}"
+horizontalLine "O endereço que será configurado no seu arquivo de hosts será: ${IP} ${GITLAB_URL}"
 
 docker-compose up etchosts
 
 grep ${GITLAB_URL} /etc/hosts
 
-echo -e "Iniciando o GIT"
+horizontalLine "Iniciando o GIT"
 
 docker-compose up -d > /dev/null
 
-echo -e "Esperando a URL ficar online"
-echo -e "Este processo pode levar vários minutos...."
+horizontalLine "Esperando a URL ficar online\nEste processo pode levar vários minutos...."
 
 while [ true ]
 do
@@ -45,24 +52,33 @@ do
     fi
 done
 
-echo -e "Aguarde...."
+horizontalLine "Aguarde...."
 sleep 30
 
-echo -e "Registrando os Runners"
+registro=$(docker-compose exec runner grep -E "(\${GITLAB_URL}|\${RUNNER_TOKEN})" /etc/gitlab-runner/config.toml && echo Registrado || echo NaoRegistrado)
 
-docker-compose exec runner gitlab-runner register \
-  --non-interactive \
-  --url "${GITLAB_URL}" \
-  --registration-token "${RUNNER_TOKEN}" \
-  --executor "docker" \
-  --docker-image alpine:latest \
-  --description "docker-runner" \
-  --tag-list "docker,aws" \
-  --run-untagged="true" \
-  --locked="false" \
-  --access-level="not_protected"
+if [ "$registro" == "Registrado" ] ; then
 
-echo -e "Tudo pronto, abrindo o git"
+    horizontalLine "Runners já configurados"
+else
+
+    horizontalLine "Registrando os Runners"
+
+    docker-compose exec runner gitlab-runner register \
+    --non-interactive \
+    --url "${GITLAB_URL}" \
+    --registration-token "${RUNNER_TOKEN}" \
+    --executor "docker" \
+    --docker-image alpine:latest \
+    --description "docker-runner" \
+    --tag-list "docker,aws" \
+    --run-untagged="true" \
+    --locked="false" \
+    --access-level="not_protected"
+
+fi
+
+horizontalLine "Tudo pronto, abrindo o git"
 
 sleep 3
 
