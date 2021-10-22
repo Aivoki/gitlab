@@ -1,0 +1,55 @@
+version: "3"
+services:
+  web:
+    image: 'gitlab/gitlab-ce:latest'
+    restart: always
+    hostname: 'student'
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url "$GITLAB_URL"
+        gitlab_rails['gitlab_shell_ssh_port'] = 2222
+        gitlab_rails['initial_root_password'] = "$ROOT_PASSWORD"
+        gitlab_rails['initial_shared_runners_registration_token'] = "$RUNNER_TOKEN"
+        letsencrypt['enable'] = false
+        gitlab_rails['monitoring_whitelist'] = ['127.0.0.0/8', '192.0.0.0/8', '172.0.0.0/8']
+    env_file: .env
+    ports:
+      - '80:80'
+      - '443:443'
+      - '2222:22'
+    volumes:
+      - 'config:/etc/gitlab'
+      - 'logs:/var/log/gitlab'
+      - 'data:/var/opt/gitlab'
+    networks:
+     - git
+
+  gitlab-runner:
+    image: gitlab/gitlab-runner:alpine
+    env_file: .env
+    networks:
+     - git
+    volumes:
+      - 'config-runner:/etc/gitlab-runner'
+      - '/var/run/docker.sock:/var/run/docker.sock'
+    depends_on:
+      - web
+    deploy:
+      mode: replicated
+      replicas: 4
+
+  etchosts:
+    image: alpine
+    env_file: .env
+    volumes:
+      - '/etc/hosts:/etc/hosts'
+    command: "/bin/sh -c 'grep ${GITLAB_HOSTS} /etc/hosts || echo -e \"127.0.0.1\t${GITLAB_HOSTS}\" >> /etc/hosts'"
+
+volumes:
+  config:
+  logs:
+  data:
+  config-runner:
+
+networks:
+  git:
