@@ -9,21 +9,27 @@ services:
       - 'config-runner:/etc/gitlab-runner'
       - '/var/run/docker.sock:/var/run/docker.sock'
     env_file: .env
-    deploy:
-      mode: replicated
-      replicas: 4
-    command: >
-      /bin/sh -c 'gitlab-runner register \
-  --non-interactive \
-  --url "$GITLAB_URL" \
-  --registration-token "$RUNNER_TOKEN" \
-  --executor "docker" \
-  --docker-image alpine:latest \
-  --description "docker-runner" \
-  --tag-list "docker" \
-  --run-untagged="true" \
-  --locked="false" \
-  --access-level="not_protected"'
+    command:
+      - /bin/bash
+      - -c
+      - /usr/bin/gitlab-runner
+      - register
+      - --non-interactive
+      - --url
+      - "$GITLAB_URL"
+      - --registration-token
+      - "$RUNNER_TOKEN"
+      - --executor
+      - "docker"
+      - --docker-image
+      - alpine:latest
+      - --description
+      - "docker-runner"
+      - --tag-list
+      - "docker"
+      - --run-untagged="true"
+      - --locked="false"
+      - --access-level="not_protected"
 
 volumes:
   config:
