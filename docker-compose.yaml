@@ -1,5 +1,11 @@
 version: "3"
 services:
+  etchosts:
+    image: alpine
+    env_file: .env
+    volumes:
+      - '/etc/hosts:/etc/hosts'
+    command: "/bin/sh -c 'grep ${GITLAB_HOSTS} /etc/hosts || echo -e \"127.0.0.1\t${GITLAB_HOSTS}\" >> /etc/hosts'"
   web:
     image: 'gitlab/gitlab-ce:latest'
     restart: always
@@ -37,13 +43,6 @@ services:
     deploy:
       mode: replicated
       replicas: 4
-
-  etchosts:
-    image: alpine
-    env_file: .env
-    volumes:
-      - '/etc/hosts:/etc/hosts'
-    command: "/bin/sh -c 'grep ${GITLAB_HOSTS} /etc/hosts || echo -e \"127.0.0.1\t${GITLAB_HOSTS}\" >> /etc/hosts'"
 
 volumes:
   config:
