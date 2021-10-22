@@ -5,7 +5,7 @@ services:
     env_file: .env
     volumes:
       - '/etc/hosts:/etc/hosts'
-    command: "/bin/sh -c 'grep ${GITLAB_HOSTS} /etc/hosts || echo -e \"127.0.0.1\t${GITLAB_HOSTS}\" >> /etc/hosts'"
+    command: "/bin/sh -c 'grep ${GITLAB_HOSTS} /etc/hosts || echo -e \"${IP}\t${GITLAB_HOSTS}\" >> /etc/hosts'"
     networks:
       - git
   web:
@@ -32,8 +32,8 @@ services:
     networks:
      - git
 
-  gitlab-runner:
-    image: gitlab/gitlab-runner:alpine
+  runner:
+    image: gitlab/gitlab-runner:latest
     env_file: .env
     networks:
      - git
