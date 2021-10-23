@@ -40,7 +40,6 @@ do
     if [[ "$?" -eq 0 ]]; then
             curl ${GITLAB_URL}/users/sign_in --connect-timeout 15 &> /dev/null
             if [[ "$?" -eq 0 ]]; then
-                echo "SUCESSO"
                 break
             else
                 # echo -e "Erro, será realizado nova tentativa"
