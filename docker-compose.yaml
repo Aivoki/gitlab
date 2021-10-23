@@ -11,7 +11,7 @@ services:
   web:
     image: 'gitlab/gitlab-ce:latest'
     restart: always
-    hostname: 'student'
+    hostname: 'git-web'
     environment:
       GITLAB_OMNIBUS_CONFIG: |
         external_url "$GITLAB_URL"
@@ -35,6 +35,7 @@ services:
   runner:
     image: gitlab/gitlab-runner:latest
     env_file: .env
+    hostname: runners
     networks:
      - git
     volumes:
