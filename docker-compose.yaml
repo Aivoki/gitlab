@@ -33,7 +33,7 @@ services:
      - git
 
   runner:
-    image: gitlab/gitlab-runner:latest
+    image: gitlab/gitlab-runner:alpine
     env_file: .env
     hostname: runners
     networks:
