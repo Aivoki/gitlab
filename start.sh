@@ -52,7 +52,7 @@ do
 done
 
 horizontalLine "Aguarde...."
-sleep 30
+sleep 60
 
 registro=$(docker-compose exec runner grep -qE "(${GITLAB_URL}|${RUNNER_TOKEN})" /etc/gitlab-runner/config.toml && echo Registrado || echo NaoRegistrado)
 
